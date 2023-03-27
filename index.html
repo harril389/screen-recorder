@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<title>HarriI</title>
+
+<head>
+</head>
+<style>
+    #video {
+        border: 1px solid #999;
+        width: 98%;
+        max-width: 860px;
+    }
+</style>
+
+<body>
+    <p>
+        <button id="start">Start Capture</button>&nbsp;<button id="stop">
+            Stop Capture
+        </button>
+    </p>
+    <video id="video" autoplay></video>
+    <br />
+</body>
+<script>
+    let start = document.getElementById('start'),
+        stop = document.getElementById('stop'),
+        mediaRecorder;
+
+    const videoElem = document.getElementById("video");
+
+    const recordScreen = async () => {
+        return await navigator.mediaDevices.getDisplayMedia({
+            audio: true,
+            video: { mediaSource: "screen" }
+        });
+    }
+
+    const saveFile = (recordedChunks) => {
+        const blob = new Blob(recordedChunks, {
+            type: 'video/webm'
+        });
+        let filename = window.prompt('Enter file name'),
+            downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = `${filename}.webm`;
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        URL.revokeObjectURL(blob); // clear from memory
+        document.body.removeChild(downloadLink);
+    }
+
+    const createRecorder = (stream, mimeType) => {
+        // the stream data is stored in this array
+        let recordedChunks = [];
+        const mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = function (e) {
+            if (e.data.size > 0) {
+                recordedChunks.push(e.data);
+            }
+        };
+        mediaRecorder.onstop = function () {
+            saveFile(recordedChunks);
+            recordedChunks = [];
+        };
+        mediaRecorder.start(200); // For every 200ms the stream data will be stored in a separate chunk.
+        return mediaRecorder;
+    }
+
+    const startRecord = async () => {
+        let stream = await recordScreen();
+        videoElem.srcObject = stream
+        const videoTrack = videoElem.srcObject.getVideoTracks()[0];
+        let mimeType = 'video/webm';
+        mediaRecorder = createRecorder(stream, mimeType);
+        let node = document.createElement("p");
+        node.textContent = "Started recording";
+        document.body.appendChild(node);
+    }
+
+    const stopRecord = () => {
+        mediaRecorder.stop();
+        let tracks = videoElem.srcObject.getTracks();
+
+        tracks.forEach((track) => track.stop());
+        let node = document.createElement("p");
+        node.textContent = "Stopped recording";
+        document.body.appendChild(node);
+    }
+
+    start.addEventListener('click', startRecord)
+
+    stop.addEventListener('click', stopRecord)
+
+</script>
+
+</html>
