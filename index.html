@@ -11,8 +11,53 @@
         max-width: 860px;
     }
 
+    #timer {
+        width: 100px;
+        padding: 6px 8px;
+        font-weight: bold;
+        font-size: 18px;
+        font-family: ubuntu;
+        display: block;
+        border: 1px solid #eee;
+        border-radius: 50px;
+        text-align: center;
+        box-shadow: 0 2px 3px #ccc;
+        background-color: white;
+        color: #4caf50;
+        margin: 0
+    }
+
     #box-button {
         display: flex;
+        margin-bottom: 16px;
+    }
+
+    #box-button>button {
+        border: 1px solid #eee;
+        padding: 6px 8px;
+        width: fit-content;
+        font-family: ubuntu;
+        border-radius: 50px;
+        font-size: 18px;
+        box-shadow: 0 2px 3px #ccc;
+        background-color: white;
+        font-weight: bold;
+    }
+
+    #start {
+        color: #4caf50;
+    }
+
+    #stop {
+        color: #d32f2f;
+    }
+
+    #pause {
+        color: #ed6c02;
+    }
+
+    #resume {
+        color: #0288d1;
     }
 
     #box-button>*:not(:last-child) {
@@ -22,19 +67,85 @@
 
 <body>
     <div id="box-button">
-        <button id="start">Start Capture</button>
-        <button id="stop" style="display:none;">Stop Capture</button>
-        <button id="pause" style="display:none;">Pause Capture</button>
-        <button id="resume" style="display:none;">Resume Capture</button>
+        <button id="start">Start</button>
+        <button id="stop" style="display:none;">Stop</button>
+        <button id="pause" style="display:none;">Pause </button>
+        <button id="resume" style="display:none;">Continue</button>
+        <p id="timer"> 00:00:00 </p>
     </div>
+
     <video id="video" autoplay></video>
-    <p id="description"></p>
     <br />
 </body>
 <script>
+    // timer
+    var clearTime;
+    var seconds = 0,
+        minutes = 0,
+        hours = 0;
+    var secs, mins, gethours;
+
+    const timer = document.getElementById("timer")
+    const startWatch = () => {
+        if (seconds === 60) {
+            seconds = 0;
+            minutes = minutes + 1;
+        }
+        mins = minutes < 10 ? "0" + minutes + ": " : minutes + ": ";
+        if (minutes === 60) {
+            minutes = 0;
+            hours = hours + 1;
+        }
+        gethours = hours < 10 ? "0" + hours + ": " : hours + ": ";
+        secs = seconds < 10 ? "0" + seconds : seconds;
+        timer.innerHTML = gethours + mins + secs;
+        seconds++;
+        clearTime = setTimeout("startWatch( )", 1000);
+    }
+
+    const startTime = () => {
+        if (seconds === 0 && minutes === 0 && hours === 0) {
+            startWatch();
+        }
+    }
+
+    const stopTime = () => {
+        if (seconds !== 0 || minutes !== 0 || hours !== 0) {
+            seconds = 0;
+            minutes = 0;
+            hours = 0;
+            secs = "0" + seconds;
+            mins = "0" + minutes + ": ";
+            gethours = "0" + hours + ": ";
+
+            var stopTime = gethours + mins + secs;
+            timer.innerHTML = stopTime;
+            clearTimeout(clearTime);
+        }
+    }
+
+    const pauseTime = () => {
+        if (seconds !== 0 || minutes !== 0 || hours !== 0) {
+            var stopTime = gethours + mins + secs;
+            timer.innerHTML = stopTime;
+
+            clearTimeout(clearTime);
+        }
+    }
+
+
+    const continueTime = () => {
+        if (seconds !== 0 || minutes !== 0 || hours !== 0) {
+            var continueTime = gethours + mins + secs;
+            timer.innerHTML = continueTime;
+            clearTimeout(clearTime);
+            clearTime = setTimeout("startWatch( )", 1000);
+        }
+    }
+
+    // screen record
     let start = document.getElementById('start'),
         stop = document.getElementById('stop'),
-        description = document.getElementById('description'),
         pause = document.getElementById('pause'),
         resume = document.getElementById('resume'),
         mediaRecorder;
@@ -87,33 +198,41 @@
         const videoTrack = videoElem.srcObject.getVideoTracks()[0];
         let mimeType = 'video/webm';
         mediaRecorder = createRecorder(stream, mimeType);
-        description.innerHTML = "Started recording";
         start.style.display = "none";
         stop.style.display = "block";
         pause.style.display = "block";
-        resume.style.display = "block";
+        timer.style.color = "#4caf50";
+        // 
+        startTime()
     }
 
     const stopRecord = () => {
+        timer.style.color = "#d32f2f";
         mediaRecorder.stop();
         let tracks = videoElem.srcObject.getTracks();
 
         tracks.forEach((track) => track.stop());
-        description.innerHTML = "Stopped recording";
         start.style.display = "block";
         stop.style.display = "none";
         pause.style.display = "none";
         resume.style.display = "none";
+        stopTime()
     }
 
     const pauseRecord = () => {
         mediaRecorder.pause();
-        description.innerHTML = "Pause";
+        resume.style.display = "block";
+        pause.style.display = "none";
+        timer.style.color = "#ed6c02";
+        pauseTime()
     }
 
     const resumeRecord = () => {
         mediaRecorder.resume();
-        description.innerHTML = "Resume";
+        resume.style.display = "none";
+        pause.style.display = "block";
+        timer.style.color = "#0288d1";
+        continueTime()
     }
 
     start.addEventListener('click', startRecord)
