@@ -10,20 +10,33 @@
         width: 98%;
         max-width: 860px;
     }
+
+    #box-button {
+        display: flex;
+    }
+
+    #box-button>*:not(:last-child) {
+        margin-right: 16px;
+    }
 </style>
 
 <body>
-    <p>
-        <button id="start">Start Capture</button>&nbsp;<button id="stop">
-            Stop Capture
-        </button>
-    </p>
+    <div id="box-button">
+        <button id="start">Start Capture</button>
+        <button id="stop" style="display:none;">Stop Capture</button>
+        <button id="pause" style="display:none;">Pause Capture</button>
+        <button id="resume" style="display:none;">Resume Capture</button>
+    </div>
     <video id="video" autoplay></video>
+    <p id="description"></p>
     <br />
 </body>
 <script>
     let start = document.getElementById('start'),
         stop = document.getElementById('stop'),
+        description = document.getElementById('description'),
+        pause = document.getElementById('pause'),
+        resume = document.getElementById('resume'),
         mediaRecorder;
 
     const videoElem = document.getElementById("video");
@@ -42,7 +55,7 @@
         let filename = window.prompt('Enter file name'),
             downloadLink = document.createElement('a');
         downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = `${filename}.webm`;
+        downloadLink.download = `${filename || 'HarriI'}.webm`;
 
         document.body.appendChild(downloadLink);
         downloadLink.click();
@@ -74,9 +87,11 @@
         const videoTrack = videoElem.srcObject.getVideoTracks()[0];
         let mimeType = 'video/webm';
         mediaRecorder = createRecorder(stream, mimeType);
-        let node = document.createElement("p");
-        node.textContent = "Started recording";
-        document.body.appendChild(node);
+        description.innerHTML = "Started recording";
+        start.style.display = "none";
+        stop.style.display = "block";
+        pause.style.display = "block";
+        resume.style.display = "block";
     }
 
     const stopRecord = () => {
@@ -84,14 +99,30 @@
         let tracks = videoElem.srcObject.getTracks();
 
         tracks.forEach((track) => track.stop());
-        let node = document.createElement("p");
-        node.textContent = "Stopped recording";
-        document.body.appendChild(node);
+        description.innerHTML = "Stopped recording";
+        start.style.display = "block";
+        stop.style.display = "none";
+        pause.style.display = "none";
+        resume.style.display = "none";
+    }
+
+    const pauseRecord = () => {
+        mediaRecorder.pause();
+        description.innerHTML = "Pause";
+    }
+
+    const resumeRecord = () => {
+        mediaRecorder.resume();
+        description.innerHTML = "Resume";
     }
 
     start.addEventListener('click', startRecord)
 
     stop.addEventListener('click', stopRecord)
+
+    pause.addEventListener('click', pauseRecord)
+
+    resume.addEventListener('click', resumeRecord)
 
 </script>
 
