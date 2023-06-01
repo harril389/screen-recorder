@@ -32,7 +32,7 @@
         margin-bottom: 16px;
     }
 
-    #box-button>button {
+    #box-button > button {
         border: 1px solid #eee;
         padding: 6px 8px;
         width: fit-content;
@@ -60,7 +60,11 @@
         color: #0288d1;
     }
 
-    #box-button>*:not(:last-child) {
+    #clear {
+        color: #ff0000;
+    }
+
+    #box-button > *:not(:last-child) {
         margin-right: 16px;
     }
 </style>
@@ -71,6 +75,7 @@
         <button id="stop" style="display:none;">Stop</button>
         <button id="pause" style="display:none;">Pause </button>
         <button id="resume" style="display:none;">Continue</button>
+        <button id="clear" style="display:none;">Clear</button>
         <p id="timer"> 00:00:00 </p>
     </div>
 
@@ -84,7 +89,7 @@
         minutes = 0,
         hours = 0;
     var secs, mins, gethours;
-
+    var isSave = true
     const timer = document.getElementById("timer")
     const startWatch = () => {
         if (seconds === 60) {
@@ -148,6 +153,7 @@
         stop = document.getElementById('stop'),
         pause = document.getElementById('pause'),
         resume = document.getElementById('resume'),
+        clear = document.getElementById('clear'),
         mediaRecorder;
 
     const videoElem = document.getElementById("video");
@@ -161,17 +167,21 @@
 
     const saveFile = (recordedChunks) => {
         const blob = new Blob(recordedChunks, {
-            type: 'video/webm'
-        });
-        let filename = window.prompt('Enter file name'),
+                type: 'video/webm'
+            });
+        if (isSave) {
+        
+            let filename = window.prompt('Enter file name'),
             downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = `${filename || 'HarriI'}.webm`;
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = `${filename || 'HarriI'}.webm`;
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
 
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
         URL.revokeObjectURL(blob); // clear from memory
-        document.body.removeChild(downloadLink);
     }
 
     const createRecorder = (stream, mimeType) => {
@@ -194,12 +204,14 @@
 
     const startRecord = async () => {
         let stream = await recordScreen();
+        isSave = true;
         videoElem.srcObject = stream
         const videoTrack = videoElem.srcObject.getVideoTracks()[0];
         let mimeType = 'video/webm';
         mediaRecorder = createRecorder(stream, mimeType);
         start.style.display = "none";
         stop.style.display = "block";
+        clear.style.display = "block";
         pause.style.display = "block";
         timer.style.color = "#4caf50";
         // 
@@ -210,12 +222,12 @@
         timer.style.color = "#d32f2f";
         mediaRecorder.stop();
         let tracks = videoElem.srcObject.getTracks();
-
         tracks.forEach((track) => track.stop());
         start.style.display = "block";
         stop.style.display = "none";
         pause.style.display = "none";
         resume.style.display = "none";
+        clear.style.display = "none";
         stopTime()
     }
 
@@ -235,6 +247,21 @@
         continueTime()
     }
 
+
+    const clearRecord = () => {
+        isSave = false;
+        mediaRecorder.stop();
+        let tracks = videoElem.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
+        start.style.display = "block";
+        stop.style.display = "none";
+        pause.style.display = "none";
+        resume.style.display = "none";
+        clear.style.display = "none";
+        timer.style.color = "#4caf50";
+        stopTime()
+    }
+
     start.addEventListener('click', startRecord)
 
     stop.addEventListener('click', stopRecord)
@@ -242,6 +269,8 @@
     pause.addEventListener('click', pauseRecord)
 
     resume.addEventListener('click', resumeRecord)
+
+    clear.addEventListener('click', clearRecord)
 
 </script>
 
