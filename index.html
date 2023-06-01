@@ -1,276 +1,89 @@
 <!DOCTYPE html>
 <html>
-    <title>HarriI</title>
+<title>HarriI</title>
 
-    <style>
-        #video {
-            border: 1px solid #999;
-            width: 98%;
-            max-width: 860px;
-        }
+<style>
+    body {
+        font-family: sans-serif;
+    }
 
-        #timer {
-            width: 100px;
-            padding: 6px 8px;
-            font-weight: bold;
-            font-size: 18px;
-            font-family: ubuntu;
-            display: block;
-            border: 1px solid #eee;
-            border-radius: 50px;
-            text-align: center;
-            box-shadow: 0 2px 3px #ccc;
-            background-color: white;
-            color: #4caf50;
-            margin: 0
-        }
+    #video {
+        border: 1px solid #999;
+        width: 98%;
+        max-width: 860px;
+    }
 
-        #box-button {
-            display: flex;
-            margin-bottom: 16px;
-        }
+    #timer {
+        width: 100px;
+        padding: 6px 8px;
+        font-weight: bold;
+        font-size: 18px;
+        display: block;
+        border: 1px solid #eee;
+        border-radius: 50px;
+        text-align: center;
+        box-shadow: 0 2px 3px #ccc;
+        background-color: white;
+        color: #4caf50;
+        margin: 0
+    }
 
-        #box-button > button {
-            border: 1px solid #eee;
-            padding: 6px 8px;
-            width: fit-content;
-            font-family: ubuntu;
-            border-radius: 50px;
-            font-size: 18px;
-            box-shadow: 0 2px 3px #ccc;
-            background-color: white;
-            font-weight: bold;
-        }
+    #box-button {
+        display: flex;
+        margin-bottom: 16px;
+    }
 
-        #start {
-            color: #4caf50;
-        }
+    #box-button>button {
+        border: 1px solid #eee;
+        padding: 6px 8px;
+        width: fit-content;
+        border-radius: 50px;
+        font-size: 18px;
+        box-shadow: 0 2px 3px #ccc;
+        background-color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
 
-        #stop {
-            color: #d32f2f;
-        }
+    #start {
+        color: #4caf50;
+    }
 
-        #pause {
-            color: #ed6c02;
-        }
+    #stop {
+        color: #d32f2f;
+    }
 
-        #resume {
-            color: #0288d1;
-        }
+    #pause {
+        color: #ed6c02;
+    }
 
-        #clear {
-            color: #ff0000;
-        }
+    #resume {
+        color: #0288d1;
+    }
 
-        #box-button > *:not(:last-child) {
-            margin-right: 16px;
-        }
-    </style>
+    #clear {
+        color: #ff0000;
+    }
 
-    <body>
-        <div id="box-button">
-            <button id="start">Start</button>
-            <button id="stop" style="display:none;">Stop</button>
-            <button id="pause" style="display:none;">Pause </button>
-            <button id="resume" style="display:none;">Continue</button>
-            <button id="clear" style="display:none;">Clear</button>
-            <p id="timer"> 00:00:00 </p>
-        </div>
+    #box-button>*:not(:last-child) {
+        margin-right: 16px;
+    }
+</style>
 
-        <video id="video" autoplay></video>
-        <br />
-    </body>
+<body>
+    <div id="box-button">
+        <button id="start">Start</button>
+        <button id="stop" style="display:none;">Stop</button>
+        <button id="pause" style="display:none;">Pause </button>
+        <button id="resume" style="display:none;">Continue</button>
+        <button id="clear" style="display:none;">Clear</button>
+        <p id="timer"> 00:00:00 </p>
+    </div>
 
-    <script>
-        // timer
-        var clearTime;
-        var seconds = 0,
-            minutes = 0,
-            hours = 0;
-        var secs, mins, gethours;
-        var isSave = true
-        const timer = document.getElementById("timer")
-        const startWatch = () => {
-            if (seconds === 60) {
-                seconds = 0;
-                minutes = minutes + 1;
-            }
-            mins = minutes < 10 ? "0" + minutes + ": " : minutes + ": ";
-            if (minutes === 60) {
-                minutes = 0;
-                hours = hours + 1;
-            }
-            gethours = hours < 10 ? "0" + hours + ": " : hours + ": ";
-            secs = seconds < 10 ? "0" + seconds : seconds;
-            timer.innerHTML = gethours + mins + secs;
-            seconds++;
-            clearTime = setTimeout("startWatch( )", 1000);
-        }
+    <video id="video" autoplay></video>
+    <br />
+</body>
 
-        const startTime = () => {
-            if (seconds === 0 && minutes === 0 && hours === 0) {
-                startWatch();
-            }
-        }
-
-        const stopTime = () => {
-            if (seconds !== 0 || minutes !== 0 || hours !== 0) {
-                seconds = 0;
-                minutes = 0;
-                hours = 0;
-                secs = "0" + seconds;
-                mins = "0" + minutes + ": ";
-                gethours = "0" + hours + ": ";
-
-                var stopTime = gethours + mins + secs;
-                timer.innerHTML = stopTime;
-                clearTimeout(clearTime);
-            }
-        }
-
-        const pauseTime = () => {
-            if (seconds !== 0 || minutes !== 0 || hours !== 0) {
-                var stopTime = gethours + mins + secs;
-                timer.innerHTML = stopTime;
-
-                clearTimeout(clearTime);
-            }
-        }
-
-
-        const continueTime = () => {
-            if (seconds !== 0 || minutes !== 0 || hours !== 0) {
-                var continueTime = gethours + mins + secs;
-                timer.innerHTML = continueTime;
-                clearTimeout(clearTime);
-                clearTime = setTimeout("startWatch( )", 1000);
-            }
-        }
-
-        // screen record
-        let start = document.getElementById('start'),
-            stop = document.getElementById('stop'),
-            pause = document.getElementById('pause'),
-            resume = document.getElementById('resume'),
-            clear = document.getElementById('clear'),
-            mediaRecorder;
-
-        const videoElem = document.getElementById("video");
-
-        const recordScreen = async () => {
-            return await navigator.mediaDevices.getDisplayMedia({
-                audio: true,
-                video: { mediaSource: "screen" }
-            });
-        }
-
-        const saveFile = (recordedChunks) => {
-            const blob = new Blob(recordedChunks, {
-                    type: 'video/webm'
-                });
-            if (isSave) {
-            
-                let filename = window.prompt('Enter file name'),
-                downloadLink = document.createElement('a');
-                downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = `${filename || 'HarriI'}.webm`;
-                
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            }
-
-            URL.revokeObjectURL(blob); // clear from memory
-        }
-
-        const createRecorder = (stream, mimeType) => {
-            // the stream data is stored in this array
-            let recordedChunks = [];
-            const mediaRecorder = new MediaRecorder(stream);
-
-            mediaRecorder.ondataavailable = function (e) {
-                if (e.data.size > 0) {
-                    recordedChunks.push(e.data);
-                }
-            };
-            mediaRecorder.onstop = function () {
-                saveFile(recordedChunks);
-                recordedChunks = [];
-            };
-            mediaRecorder.start(200); // For every 200ms the stream data will be stored in a separate chunk.
-            return mediaRecorder;
-        }
-
-        const startRecord = async () => {
-            let stream = await recordScreen();
-            isSave = true;
-            videoElem.srcObject = stream
-            const videoTrack = videoElem.srcObject.getVideoTracks()[0];
-            let mimeType = 'video/webm';
-            mediaRecorder = createRecorder(stream, mimeType);
-            start.style.display = "none";
-            stop.style.display = "block";
-            clear.style.display = "block";
-            pause.style.display = "block";
-            timer.style.color = "#4caf50";
-            // 
-            startTime()
-        }
-
-        const stopRecord = () => {
-            timer.style.color = "#d32f2f";
-            mediaRecorder.stop();
-            let tracks = videoElem.srcObject.getTracks();
-            tracks.forEach((track) => track.stop());
-            start.style.display = "block";
-            stop.style.display = "none";
-            pause.style.display = "none";
-            resume.style.display = "none";
-            clear.style.display = "none";
-            stopTime()
-        }
-
-        const pauseRecord = () => {
-            mediaRecorder.pause();
-            resume.style.display = "block";
-            pause.style.display = "none";
-            timer.style.color = "#ed6c02";
-            pauseTime()
-        }
-
-        const resumeRecord = () => {
-            mediaRecorder.resume();
-            resume.style.display = "none";
-            pause.style.display = "block";
-            timer.style.color = "#0288d1";
-            continueTime()
-        }
-
-
-        const clearRecord = () => {
-            isSave = false;
-            mediaRecorder.stop();
-            let tracks = videoElem.srcObject.getTracks();
-            tracks.forEach((track) => track.stop());
-            start.style.display = "block";
-            stop.style.display = "none";
-            pause.style.display = "none";
-            resume.style.display = "none";
-            clear.style.display = "none";
-            timer.style.color = "#4caf50";
-            stopTime()
-        }
-
-        start.addEventListener('click', startRecord)
-
-        stop.addEventListener('click', stopRecord)
-
-        pause.addEventListener('click', pauseRecord)
-
-        resume.addEventListener('click', resumeRecord)
-
-        clear.addEventListener('click', clearRecord)
-
-    </script>
+<script src="index.js"></script>
 
 </html>
